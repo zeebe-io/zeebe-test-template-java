@@ -22,7 +22,7 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import io.zeebe.client.TopicClient;
+import io.zeebe.client.TopicsClient;
 import io.zeebe.client.event.*;
 import org.junit.rules.ExternalResource;
 
@@ -30,24 +30,21 @@ public class TopicEventRecorder extends ExternalResource
 {
     private static final String SUBSCRIPTION_NAME = "event-recorder";
 
-    private final List<ReceivedTaskEvent> taskEvents = new CopyOnWriteArrayList<>();
-    private final List<ReceivedWorkflowInstanceEvent> wfInstanceEvents = new CopyOnWriteArrayList<>();
+    private final List<TaskEvent> taskEvents = new CopyOnWriteArrayList<>();
+    private final List<WorkflowInstanceEvent> wfInstanceEvents = new CopyOnWriteArrayList<>();
 
     private final ClientRule clientRule;
 
     private final String topicName;
-    private final int partitionId;
 
     protected TopicSubscription subscription;
 
     public TopicEventRecorder(
             final ClientRule clientRule,
-            final String topicName,
-            final int partitionId)
+            final String topicName)
     {
         this.clientRule = clientRule;
         this.topicName = topicName;
-        this.partitionId = partitionId;
     }
 
     @Override
@@ -64,12 +61,12 @@ public class TopicEventRecorder extends ExternalResource
 
     private void startRecordingEvents()
     {
-        final TopicClient client = clientRule.getClient().topic(topicName, partitionId);
+        final TopicsClient client = clientRule.getClient().topics();
 
-        subscription = client.newSubscription()
+        subscription = client.newSubscription(topicName)
             .name(SUBSCRIPTION_NAME)
-            .taskEventHandler((m, e) -> taskEvents.add(new ReceivedTaskEvent(m, e)))
-            .workflowInstanceEventHandler((m, e) -> wfInstanceEvents.add(new ReceivedWorkflowInstanceEvent(m, e)))
+            .taskEventHandler(t -> taskEvents.add(t))
+            .workflowInstanceEventHandler(wf -> wfInstanceEvents.add(wf))
             .open();
     }
 
@@ -93,88 +90,44 @@ public class TopicEventRecorder extends ExternalResource
         }
     }
 
-    public List<ReceivedWorkflowInstanceEvent> getWorkflowInstanceEvents(final Predicate<ReceivedWorkflowInstanceEvent> matcher)
+    public List<WorkflowInstanceEvent> getWorkflowInstanceEvents(final Predicate<WorkflowInstanceEvent> matcher)
     {
         return wfInstanceEvents.stream().filter(matcher).collect(Collectors.toList());
     }
 
-    public ReceivedWorkflowInstanceEvent getLastWorkflowInstanceEvent(final Predicate<ReceivedWorkflowInstanceEvent> matcher)
+    public WorkflowInstanceEvent getLastWorkflowInstanceEvent(final Predicate<WorkflowInstanceEvent> matcher)
     {
         return getLastEvent(wfInstanceEvents.stream().filter(matcher)).orElseThrow(() -> new AssertionError("no event found"));
     }
 
-    public List<ReceivedTaskEvent> getTaskEvents(final Predicate<ReceivedTaskEvent> matcher)
+    public List<TaskEvent> getTaskEvents(final Predicate<TaskEvent> matcher)
     {
         return taskEvents.stream().filter(matcher).collect(Collectors.toList());
     }
 
-    public ReceivedTaskEvent getLastTaskEvent(final Predicate<ReceivedTaskEvent> matcher)
+    public TaskEvent getLastTaskEvent(final Predicate<TaskEvent> matcher)
     {
         return getLastEvent(taskEvents.stream().filter(matcher)).orElseThrow(() -> new AssertionError("no event found"));
     }
 
-    public static Predicate<ReceivedWorkflowInstanceEvent> wfInstance(final String eventType)
+    public static Predicate<WorkflowInstanceEvent> wfInstance(final String eventType)
     {
-        return e -> e.getEvent().getEventType().equals(eventType);
+        return e -> e.getState().equals(eventType);
     }
 
-    public static Predicate<ReceivedWorkflowInstanceEvent> wfInstanceKey(final long key)
+    public static Predicate<WorkflowInstanceEvent> wfInstanceKey(final long key)
     {
-        return e -> e.getEvent().getWorkflowInstanceKey() == key;
+        return e -> e.getWorkflowInstanceKey() == key;
     }
 
-    public static Predicate<ReceivedTaskEvent> taskKey(final long key)
+    public static Predicate<TaskEvent> taskKey(final long key)
     {
-        return e -> e.getMetadata().getEventKey() == key;
+        return e -> e.getMetadata().getKey() == key;
     }
 
-    public static Predicate<ReceivedTaskEvent> taskType(final String type)
+    public static Predicate<TaskEvent> taskType(final String type)
     {
-        return e -> e.getEvent().getType().equals(type);
-    }
-
-    public class ReceivedTaskEvent
-    {
-        private final EventMetadata metadata;
-        private final TaskEvent event;
-
-        ReceivedTaskEvent(EventMetadata metadata, TaskEvent event)
-        {
-            this.metadata = metadata;
-            this.event = event;
-        }
-
-        public EventMetadata getMetadata()
-        {
-            return metadata;
-        }
-
-        public TaskEvent getEvent()
-        {
-            return event;
-        }
-    }
-
-    public class ReceivedWorkflowInstanceEvent
-    {
-        private final EventMetadata metadata;
-        private final WorkflowInstanceEvent event;
-
-        ReceivedWorkflowInstanceEvent(EventMetadata metadata, WorkflowInstanceEvent event)
-        {
-            this.metadata = metadata;
-            this.event = event;
-        }
-
-        public EventMetadata getMetadata()
-        {
-            return metadata;
-        }
-
-        public WorkflowInstanceEvent getEvent()
-        {
-            return event;
-        }
+        return e -> e.getType().equals(type);
     }
 
 }

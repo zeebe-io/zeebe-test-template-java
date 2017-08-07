@@ -50,7 +50,7 @@ public class ZeebeTestRule extends ExternalResource
         brokerRule = new EmbeddedBrokerRule(configSupplier);
         clientRule = new ClientRule(propertiesProvider);
 
-        topicEventRecorder = new TopicEventRecorder(clientRule, DEFAULT_TOPIC, DEFAULT_PARTITION);
+        topicEventRecorder = new TopicEventRecorder(clientRule, DEFAULT_TOPIC);
     }
 
     public ZeebeClient getClient()
@@ -80,8 +80,8 @@ public class ZeebeTestRule extends ExternalResource
 
         waitUntil(() ->
         {
-            final WorkflowInstanceEvent event = topicEventRecorder.getLastWorkflowInstanceEvent(wfInstanceKey(key)).getEvent();
-            return event.getEventType().equals("WORKFLOW_INSTANCE_COMPLETED");
+            final WorkflowInstanceEvent event = topicEventRecorder.getLastWorkflowInstanceEvent(wfInstanceKey(key));
+            return event.getState().equals("WORKFLOW_INSTANCE_COMPLETED");
         }, "workflow instance is not completed");
     }
 
@@ -91,8 +91,8 @@ public class ZeebeTestRule extends ExternalResource
 
         waitUntil(() ->
         {
-            final TaskEvent event = topicEventRecorder.getLastTaskEvent(taskKey(key)).getEvent();
-            return event.getEventType().equals("COMPLETED");
+            final TaskEvent event = topicEventRecorder.getLastTaskEvent(taskKey(key));
+            return event.getState().equals("COMPLETED");
         }, "task is not completed");
     }
 
@@ -100,7 +100,7 @@ public class ZeebeTestRule extends ExternalResource
     {
         topicEventRecorder.getWorkflowInstanceEvents(wfInstanceKey(key)).forEach(event ->
         {
-            System.out.println("> " + event.getEvent());
+            System.out.println("> " + event);
         });
     }
 
