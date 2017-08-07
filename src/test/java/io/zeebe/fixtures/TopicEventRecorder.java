@@ -89,7 +89,7 @@ public class TopicEventRecorder extends ExternalResource
         }
         else
         {
-            return Optional.of(events.get(events.size() -1));
+            return Optional.of(events.get(events.size() - 1));
         }
     }
 
