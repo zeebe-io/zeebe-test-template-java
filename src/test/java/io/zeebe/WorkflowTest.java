@@ -53,10 +53,7 @@ public class WorkflowTest
             .taskType("task")
             .lockOwner("test")
             .lockTime(Duration.ofSeconds(30))
-            .handler((c, t) ->
-            {
-                c.completeTaskWithoutPayload();
-            })
+            .handler((c, t) -> c.complete(t).withoutPayload().execute())
             .open();
 
         testRule.waitUntilWorklowInstanceCompleted(workflowInstance.getWorkflowInstanceKey());
