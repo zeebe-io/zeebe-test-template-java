@@ -9,11 +9,11 @@
 	<parent>
 		<groupId>io.zeebe</groupId>
 		<artifactId>zb-parent</artifactId>
-		<version>0.1.0</version>
+		<version>0.2.0</version>
 	</parent>
 
 	<properties>
-		<version.zeebe>0.2.0</version.zeebe>
+		<version.zeebe>0.3.0</version.zeebe>
 	</properties>
 
 	<dependencies>
