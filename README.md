@@ -2,6 +2,13 @@
 
 This repository contains a simple example of how to write a test for Zeebe. You can use it for reporting bugs or asking questions in the forum.
 
+* [Web Site](https://zeebe.io)
+* [Documentation](https://docs.zeebe.io)
+* [Issue Tracker](https://github.com/zeebe-io/zeebe/issues)
+* [Slack Channel](https://zeebe-slackin.herokuapp.com/)
+* [User Forum](https://forum.zeebe.io)
+* [Contribution Guidelines](/CONTRIBUTING.md)
+
 ## Run with Maven
 
 You can run the tests with the Maven command:
