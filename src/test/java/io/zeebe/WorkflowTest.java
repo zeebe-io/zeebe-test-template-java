@@ -15,8 +15,6 @@
  */
 package io.zeebe;
 
-import static io.zeebe.fixtures.ZeebeTestRule.DEFAULT_TOPIC;
-
 import java.time.Duration;
 
 import io.zeebe.client.ZeebeClient;
@@ -30,13 +28,15 @@ public class WorkflowTest
     public ZeebeTestRule testRule = new ZeebeTestRule();
 
     private ZeebeClient client;
+    private String topic;
 
     @Before
     public void deploy()
     {
         client = testRule.getClient();
+        topic = testRule.getDefaultTopic();
 
-        client.workflows().deploy(DEFAULT_TOPIC)
+        client.workflows().deploy(topic)
                 .resourceFromClasspath("process.bpmn")
                 .execute();
     }
@@ -44,12 +44,12 @@ public class WorkflowTest
     @Test
     public void shouldCompleteWorkflowInstance()
     {
-        final WorkflowInstanceEvent workflowInstance = client.workflows().create(DEFAULT_TOPIC)
+        final WorkflowInstanceEvent workflowInstance = client.workflows().create(topic)
             .bpmnProcessId("process")
             .latestVersion()
             .execute();
 
-        client.tasks().newTaskSubscription(DEFAULT_TOPIC)
+        client.tasks().newTaskSubscription(topic)
             .taskType("task")
             .lockOwner("test")
             .lockTime(Duration.ofSeconds(30))

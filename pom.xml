@@ -13,7 +13,7 @@
 	</parent>
 
 	<properties>
-		<version.zeebe>0.3.0</version.zeebe>
+		<version.zeebe>0.4.0-SNAPSHOT</version.zeebe>
 	</properties>
 
 	<dependencies>
