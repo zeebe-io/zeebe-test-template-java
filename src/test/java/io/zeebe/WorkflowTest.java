@@ -15,11 +15,11 @@
  */
 package io.zeebe;
 
+import io.zeebe.test.ZeebeTestRule;
 import java.time.Duration;
 
 import io.zeebe.client.ZeebeClient;
 import io.zeebe.client.event.WorkflowInstanceEvent;
-import io.zeebe.fixtures.ZeebeTestRule;
 import org.junit.*;
 
 public class WorkflowTest
@@ -37,7 +37,7 @@ public class WorkflowTest
         topic = testRule.getDefaultTopic();
 
         client.workflows().deploy(topic)
-                .resourceFromClasspath("process.bpmn")
+                .addResourceFromClasspath("process.bpmn")
                 .execute();
     }
 
@@ -56,7 +56,7 @@ public class WorkflowTest
             .handler((c, t) -> c.complete(t).withoutPayload().execute())
             .open();
 
-        testRule.waitUntilWorklowInstanceCompleted(workflowInstance.getWorkflowInstanceKey());
+        testRule.waitUntilWorkflowInstanceCompleted(workflowInstance.getWorkflowInstanceKey());
     }
 
 }
