@@ -15,48 +15,49 @@
  */
 package io.zeebe;
 
-import io.zeebe.test.ZeebeTestRule;
-import java.time.Duration;
-
 import io.zeebe.client.ZeebeClient;
-import io.zeebe.client.event.WorkflowInstanceEvent;
-import org.junit.*;
+import io.zeebe.client.api.events.WorkflowInstanceEvent;
+import io.zeebe.test.ZeebeTestRule;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
 
-public class WorkflowTest
-{
-    @Rule
-    public ZeebeTestRule testRule = new ZeebeTestRule();
+public class WorkflowTest {
 
-    private ZeebeClient client;
-    private String topic;
+  @Rule public ZeebeTestRule testRule = new ZeebeTestRule();
 
-    @Before
-    public void deploy()
-    {
-        client = testRule.getClient();
-        topic = testRule.getDefaultTopic();
+  private ZeebeClient client;
 
-        client.workflows().deploy(topic)
-                .addResourceFromClasspath("process.bpmn")
-                .execute();
-    }
+  @Before
+  public void deploy() {
+    client = testRule.getClient();
 
-    @Test
-    public void shouldCompleteWorkflowInstance()
-    {
-        final WorkflowInstanceEvent workflowInstance = client.workflows().create(topic)
+    client
+        .workflowClient()
+        .newDeployCommand()
+        .addResourceFromClasspath("process.bpmn")
+        .send()
+        .join();
+  }
+
+  @Test
+  public void shouldCompleteWorkflowInstance() {
+    final WorkflowInstanceEvent workflowInstance =
+        client
+            .workflowClient()
+            .newCreateInstanceCommand()
             .bpmnProcessId("process")
             .latestVersion()
-            .execute();
+            .send()
+            .join();
 
-        client.tasks().newTaskSubscription(topic)
-            .taskType("task")
-            .lockOwner("test")
-            .lockTime(Duration.ofSeconds(30))
-            .handler((c, t) -> c.complete(t).withoutPayload().execute())
-            .open();
+    client
+        .jobClient()
+        .newWorker()
+        .jobType("task")
+        .handler((c, t) -> c.newCompleteCommand(t.getKey()).send().join())
+        .open();
 
-        testRule.waitUntilWorkflowInstanceCompleted(workflowInstance.getWorkflowInstanceKey());
-    }
-
+    ZeebeTestRule.assertThat(workflowInstance).isEnded().hasPassed("start", "task", "end");
+  }
 }
