@@ -13,7 +13,7 @@
 			<dependency>
 				<groupId>io.zeebe</groupId>
 				<artifactId>zb-bom</artifactId>
-				<version>0.14.0</version>
+				<version>0.17.0</version>
 				<scope>import</scope>
 				<type>pom</type>
 			</dependency>

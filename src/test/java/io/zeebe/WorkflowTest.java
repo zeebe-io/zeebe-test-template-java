@@ -32,27 +32,15 @@ public class WorkflowTest {
   public void deploy() {
     client = testRule.getClient();
 
-    client
-        .workflowClient()
-        .newDeployCommand()
-        .addResourceFromClasspath("process.bpmn")
-        .send()
-        .join();
+    client.newDeployCommand().addResourceFromClasspath("process.bpmn").send().join();
   }
 
   @Test
   public void shouldCompleteWorkflowInstance() {
     final WorkflowInstanceEvent workflowInstance =
-        client
-            .workflowClient()
-            .newCreateInstanceCommand()
-            .bpmnProcessId("process")
-            .latestVersion()
-            .send()
-            .join();
+        client.newCreateInstanceCommand().bpmnProcessId("process").latestVersion().send().join();
 
     client
-        .jobClient()
         .newWorker()
         .jobType("task")
         .handler((c, t) -> c.newCompleteCommand(t.getKey()).send().join())
