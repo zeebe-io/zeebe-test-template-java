@@ -12,8 +12,15 @@
 		<dependencies>
 			<dependency>
 				<groupId>io.zeebe</groupId>
-				<artifactId>zb-bom</artifactId>
-				<version>0.17.0</version>
+				<artifactId>zeebe-bom</artifactId>
+				<version>0.19.0-alpha3</version>
+				<scope>import</scope>
+				<type>pom</type>
+			</dependency>
+			<dependency>
+				<groupId>io.netty</groupId>
+				<artifactId>netty-bom</artifactId>
+				<version>4.1.37.Final</version>
 				<scope>import</scope>
 				<type>pom</type>
 			</dependency>
