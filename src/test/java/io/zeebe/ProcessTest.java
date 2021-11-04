@@ -15,14 +15,14 @@
  */
 package io.zeebe;
 
-import io.zeebe.client.ZeebeClient;
-import io.zeebe.client.api.response.WorkflowInstanceEvent;
-import io.zeebe.test.ZeebeTestRule;
+import io.camunda.zeebe.client.ZeebeClient;
+import io.camunda.zeebe.client.api.response.ProcessInstanceEvent;
+import io.camunda.zeebe.test.ZeebeTestRule;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 
-public class WorkflowTest {
+public class ProcessTest {
 
   @Rule public ZeebeTestRule testRule = new ZeebeTestRule();
 
@@ -36,8 +36,8 @@ public class WorkflowTest {
   }
 
   @Test
-  public void shouldCompleteWorkflowInstance() {
-    final WorkflowInstanceEvent workflowInstance =
+  public void shouldCompleteProcessInstance() {
+    final ProcessInstanceEvent processInstance =
         client.newCreateInstanceCommand().bpmnProcessId("process").latestVersion().send().join();
 
     client
@@ -46,6 +46,6 @@ public class WorkflowTest {
         .handler((c, t) -> c.newCompleteCommand(t.getKey()).send().join())
         .open();
 
-    ZeebeTestRule.assertThat(workflowInstance).isEnded().hasPassed("start", "task", "end");
+    ZeebeTestRule.assertThat(processInstance).isEnded().hasPassed("start", "task", "end");
   }
 }
